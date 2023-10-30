@@ -1,0 +1,96 @@
+version: '3.8'
+services:
+  chatdocs:
+    image: chatdocs
+    container_name: chatdocs
+    environment:
+      - OPENAI_API_KEY=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
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+      - elastic
+    build: 
+      context: "./backend"
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "8001:8001"
+    networks:
+      - assignment
+
+  chatdocs_worker:
+    image: chatdocs_worker
+    container_name: chatdocs_worker
+    environment:
+      - OPENAI_API_KEY=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
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+      - elastic
+    build: 
+      context: "./backend"
+      dockerfile: Dockerfile_worker
+    restart: always
+    command: celery --app worker worker --loglevel=info
+
+    networks:
+      - assignment
+
+  chatdocs_flower:
+    image: chatdocs_flower
+    container_name: chatdocs_flower
+    ports:
+      - "5550:5550"
+    build: 
+      context: "./backend"
+      dockerfile: Dockerfile_worker
+    environment:
+      - OPENAI_API_KEY=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
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+      - elastic
+    restart: always
+    command: celery flower --port=5550 --app worker worker --loglevel=info
+
+    networks:
+      - assignment
+  
+  redis:
+    image: "redis:6.2"
+    container_name: redis
+    command: redis-server
+    ports:
+      - "6379:6379"
+    networks:
+      - assignment
+    restart: always
+  
+  elastic:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.9.0
+    container_name: elasticsearch
+    restart: always
+    environment:
+      - cluster.name=docker-cluster
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+      - xpack.security.http.ssl.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - ./docker/elastic_data:/usr/share/elasticsearch/data:rw
+    ports:
+      - 9200:9200
+    networks:
+      - assignment
+networks:
+  assignment:
+    driver: bridge
