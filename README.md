@@ -21,10 +21,19 @@ Follow these steps to set up the **Chat with Docs** project on your local machin
    git clone https://github.com/vankhanh0911/chatdocs.git
     ```
 2. Start BE
+    
+    Edit file docker-compose.yml. Push OPEN_API_KEY
+
     ```bash
     cd chatdocs && docker compose up -d
     ```
 3. Start frontend
+    
+    Edit NEXT_PUBLIC_API_DOMAIN in .env file.
+    ```
+    NEXT_PUBLIC_API_DOMAIN=http://localhost:8002
+    ```
+
     ```
     cd frontend && yarn && yarn dev
     ```
