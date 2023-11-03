@@ -4,7 +4,9 @@ services:
     image: chatdocs
     container_name: chatdocs
     environment:
-      - OPENAI_API_KEY=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
+      - OPENAI_API_KEY=
+      - DOMAIN_NAME=http://localhost:8002
+      - PORT=8002
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:
@@ -13,9 +15,11 @@ services:
     build: 
       context: "./backend"
       dockerfile: Dockerfile
+      args:
+        PORT: 8002
     restart: always
     ports:
-      - "8001:8001"
+      - "8002:8002"
     networks:
       - assignment
 
@@ -23,9 +27,10 @@ services:
     image: chatdocs_worker
     container_name: chatdocs_worker
     environment:
-      - OPENAI_API_KEY=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
+      - OPENAI_API_KEY=
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - DOMAIN_NAME=http://localhost:8002
     depends_on:
       - redis
       - elastic
@@ -47,7 +52,6 @@ services:
       context: "./backend"
       dockerfile: Dockerfile_worker
     environment:
-      - OPENAI_API_KEY=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
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:

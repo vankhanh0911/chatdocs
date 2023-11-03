@@ -272,9 +272,6 @@ def create_app(config=None):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-p", "--port", action="store", default="8001")
-    args = parser.parse_args()
-    port = int(args.port)
+    port = int(os.getenv("PORT"))
     app = create_app()
     app.run(host="0.0.0.0", port=port, threaded=True)

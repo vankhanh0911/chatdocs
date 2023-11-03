@@ -8,6 +8,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-EXPOSE 8001
+ARG PORT=8001
+
+EXPOSE ${PORT}
 
 CMD [ "python", "./main.py" ]
