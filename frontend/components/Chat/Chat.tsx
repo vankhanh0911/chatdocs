@@ -431,6 +431,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                       handleSend(
                         editedMessage,
                         selectedConversation?.messages.length - index,
+                        null
                       );
                     }}
                   />

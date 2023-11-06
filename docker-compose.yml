@@ -27,7 +27,7 @@ services:
     image: chatdocs_worker
     container_name: chatdocs_worker
     environment:
-      - OPENAI_API_KEY=
+      - OPENAI_API_KEY=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
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
       - DOMAIN_NAME=http://localhost:8002
@@ -52,8 +52,10 @@ services:
       context: "./backend"
       dockerfile: Dockerfile_worker
     environment:
+      - OPENAI_API_KEY=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
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - DOMAIN_NAME=http://localhost:8002
     depends_on:
       - redis
       - elastic
