@@ -2,7 +2,7 @@ import os
 import queue
 import argparse
 from flask import Flask, Response, jsonify, request, abort
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 from logzero import logger
 import openai
 from dotenv import load_dotenv
@@ -213,16 +213,19 @@ def create_app(config=None):
     CORS(app)
 
     @app.route("/")
+    @cross_origin()
     def welcome():
         logger.info("/")
         return "Welcome to Antsomi Chatbot API"
 
     @app.route("/api/chat", methods=['POST'])
+    @cross_origin()
     def chat():
         data = request.json
         return Response(perform_request_with_streaming(data), mimetype="text/event-stream")
 
     @app.route('/api/upload', methods=['POST'])
+    @cross_origin()
     def upload_file():
         if 'file' not in request.files:
             return abort(400, 'File not found')
@@ -242,6 +245,7 @@ def create_app(config=None):
         return jsonify({"message": "ok", "data": {"fileUrl": final_path}})
     
     @app.route('/api/agent', methods=['POST'])
+    @cross_origin()
     def saveAgent():
         data = request.json
         save_agent_business = business.Business()
@@ -251,6 +255,7 @@ def create_app(config=None):
         return jsonify({"message": "ok", "data": {"agentId": response.get("_id")}})
     
     @app.route('/api/page/list', methods=['POST'])
+    @cross_origin()
     def getListPage():
         data = request.json
         save_agent_business = business.Business()
