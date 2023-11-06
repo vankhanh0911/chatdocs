@@ -211,6 +211,7 @@ def create_app(config=None):
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
     CORS(app)
+    app.config['CORS_HEADERS'] = 'Content-Type'
 
     @app.route("/")
     @cross_origin()
