@@ -1,7 +1,7 @@
 import os
 import queue
 import argparse
-from flask import Flask, Response, jsonify, request, abort
+from flask import Flask, Response, jsonify, request, abort, make_response
 from flask_cors import CORS, cross_origin
 from logzero import logger
 import openai
@@ -222,12 +222,17 @@ def create_app(config=None):
     @app.route("/api/chat", methods=['POST'])
     @cross_origin()
     def chat():
+        if request.method == "OPTIONS":
+            return _build_cors_preflight_response()
         data = request.json
-        return Response(perform_request_with_streaming(data), mimetype="text/event-stream")
+        return _corsify_actual_response(Response(perform_request_with_streaming(data), mimetype="text/event-stream"))
 
     @app.route('/api/upload', methods=['POST'])
     @cross_origin()
     def upload_file():
+        if request.method == "OPTIONS":
+            return _build_cors_preflight_response()
+        
         if 'file' not in request.files:
             return abort(400, 'File not found')
         file = request.files['file']
@@ -243,27 +248,31 @@ def create_app(config=None):
 
         file.save(final_path)
 
-        return jsonify({"message": "ok", "data": {"fileUrl": final_path}})
+        return _corsify_actual_response(jsonify({"message": "ok", "data": {"fileUrl": final_path}}))
     
     @app.route('/api/agent', methods=['POST'])
     @cross_origin()
     def saveAgent():
+        if request.method == "OPTIONS":
+            return _build_cors_preflight_response()
         data = request.json
         save_agent_business = business.Business()
 
         response = save_agent_business.saveAgent(data)
 
-        return jsonify({"message": "ok", "data": {"agentId": response.get("_id")}})
+        return _corsify_actual_response(jsonify({"message": "ok", "data": {"agentId": response.get("_id")}}))
     
     @app.route('/api/page/list', methods=['POST'])
     @cross_origin()
     def getListPage():
+        if request.method == "OPTIONS":
+            return _build_cors_preflight_response()
         data = request.json
         save_agent_business = business.Business()
 
         pages = save_agent_business.getPages(data)
 
-        return jsonify({"message": "ok", "data": {"pages": pages}})
+        return _corsify_actual_response(jsonify({"message": "ok", "data": {"pages": pages}}))
     
     # @app.route('/api/agent/:id', methods=['GET'])
     # def getAgent():
@@ -275,6 +284,17 @@ def create_app(config=None):
     #     return jsonify({"message": "ok", "data": {"agentId": response.get("_id")}})
 
     return app
+
+def _build_cors_preflight_response():
+    response = make_response()
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add('Access-Control-Allow-Headers', "*")
+    response.headers.add('Access-Control-Allow-Methods', "*")
+    return response
+
+def _corsify_actual_response(response):
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
 
 
 if __name__ == "__main__":
